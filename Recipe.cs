@@ -1,40 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
 
 namespace POE {
     /// <summary>
     /// This is the recipe class! WOOHOO!!!
     /// </summary>
-    public class Recipe {
-        private string name;
-        public string Name {
-            get => this.name;
-            set => this.name = value;
-        }
-        private readonly List<string> ingredients;
-        private readonly List<UnitOfMeasurement> UoM;
-        private readonly List<string> convertedUoM;
-        private List<double> quantity;
-        private readonly List<string> foodGroup;
-        private List<ushort> calories;
-        private readonly List<double> origionalQuantity;
-        private readonly List<string> steps;
-        private double totalCalories;
-
-        public double TotalCalories {
-            get => this.totalCalories;
-        }
-
-        private delegate void CaloricIntakeWarning(double calories);
-
-        private CaloricIntakeWarning CalorieWarning = new CaloricIntakeWarning(calories => {
-            if (calories > 300) {
-                CConsole.Print("WARNING! Calorie Count Exceeeds 300 Calories!!", CColor.Black, CColor.Yellow, true, true);
-                return;
-            }
-        });
-
+    internal class Recipe {
+        private readonly string name;
+        private readonly string[] ingredients;
+        private readonly UnitOfMeasurement[] UoM;
+        private readonly string[] convertedUoM;
+        private double[] quantity;
+        private readonly double[] origionalQuantity;
+        private readonly string[] steps;
         /// <summary>
         /// This is the default constructor
         /// </summary>
@@ -42,36 +19,26 @@ namespace POE {
         /// <param name="UoM">Array of unit of measurements</param>
         /// <param name="quantity">Array of quantities</param>
         /// <param name="steps">Array of steps</param>
-        public Recipe(string name, string[] ingredients, UnitOfMeasurement[] UoM, double[] quantity, ushort[] calories, string[] foodGroup, string[] steps) {
-            this.name = name;
-
-            this.ingredients = new List<string>(ingredients);
-
-            this.UoM = new List<UnitOfMeasurement>(UoM);
-
-            this.quantity = new List<double>(quantity);
-            this.origionalQuantity = new List<double>();
-            this.quantity.ForEach(item => this.origionalQuantity.Add(item));
-
-            this.foodGroup = new List<string>(foodGroup);
-
-            this.calories = new List<ushort>(calories);
-            this.calories.ForEach(calorie => this.totalCalories += calorie);
-            this.CalorieWarning(this.totalCalories);
-
-            this.steps = new List<string>(steps);
-
-            this.convertedUoM = new List<string>();
-            for (int i = 0; i < this.ingredients.Count; i++) {
-                this.convertedUoM.Add(this.ConvertNecessary(this.quantity[i], this.UoM[i]));
+        public Recipe(string name, string[] ingredients, UnitOfMeasurement[] UoM, double[] quantity, string[] steps) {
+            this.ingredients = ingredients;
+            this.UoM = UoM;
+            this.quantity = quantity;
+            this.origionalQuantity = new double[quantity.Length];
+            for (int i = 0; i < quantity.Length; i++) {
+                this.origionalQuantity[i] = quantity[i];
             }
+            this.steps = steps;
+            this.convertedUoM = new string[this.ingredients.Length];
 
+            for (int i = 0; i < this.ingredients.Length; i++) {
+                this.convertedUoM[i] = this.ConvertNecessary(this.quantity[i], this.UoM[i]);
+            }
         }
         /// <summary>
         /// Resets the recipe to its default values
         /// </summary>
         public void ResetRecipe() {
-            for (int i = 0; i < this.origionalQuantity.Count; i++) {
+            for (int i = 0; i < this.origionalQuantity.Length; i++) {
                 this.quantity[i] = this.origionalQuantity[i];
                 this.convertedUoM[i] = this.ConvertNecessary(this.quantity[i], this.UoM[i]);
             }
@@ -81,38 +48,25 @@ namespace POE {
         /// </summary>
         /// <param name="factor">The factor at which to scale the recipe</param>
         public void Scale(double factor) {
-            for (int i = 0; i < this.ingredients.Count; i++) {
+            for (int i = 0; i < this.ingredients.Length; i++) {
                 this.quantity[i] *= factor;
                 this.convertedUoM[i] = this.ConvertNecessary(this.quantity[i], this.UoM[i]);
             }
-            this.totalCalories *= factor;
-            this.CalorieWarning(this.totalCalories);
-
         }
         /// <summary>
         /// This method returns the recipe as a string
         /// </summary>
         /// <returns>A formatted view of the recipe</returns>
-        public void PrintRecipe() {
-            string msg = $"Recipe: {this.name}\nIngredients:\n";
-            for (int i = 0; i < this.ingredients.Count; i++) {
-                msg += $"{this.convertedUoM[i]} of {this.ingredients[i]} ({this.calories[i]} Calories) [Food Group: {this.foodGroup[i]}]\n";
+        public override string ToString() {
+            string msg = $"{this.name}\nIngredients:\n";
+            for (int i = 0; i < this.ingredients.Length; i++) {
+                msg += $"{this.convertedUoM[i]} of {this.ingredients[i]}\n";
             }
             msg += "\nSteps:\n";
-            for (int i = 0; i < this.steps.Count; i++) {
+            for (int i = 0; i < this.steps.Length; i++) {
                 msg += $"Step {i + 1}: {this.steps[i]}\n";
             }
-
-            Console.WriteLine(msg);
-
-            this.CalorieWarning(this.totalCalories);
-
-            if (this.totalCalories > 300) {
-                Console.WriteLine($"Total Calories: {this.totalCalories}");
-                Console.ResetColor();
-            } else {
-                Console.WriteLine($"Total Calories: {this.totalCalories}");
-            }
+            return msg;
         }
 
 #pragma warning disable

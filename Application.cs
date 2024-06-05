@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 // |========================================================================|
 // |========================================================================|
@@ -24,28 +22,23 @@ using System.Linq;
 namespace POE {
 
     internal class Application {
-        private List<Recipe> recipes;
-        private int? active_recipe;
         //Small enum that tells the app what state to be in to determine what logical operators to perform
         //The value of the enum refers to the maximum options of each state
         //Enum is defined in the class as it local to this class only
         private enum AppState {
-            outRecipe = 3,
-            inRecipe = 7
+            noRecipe = 2,
+            hasRecipe = 5
         }
         //Get the state of the application
         private AppState state;
         //The application loop
         private bool appFinished = false;
+        private Recipe recipe;
         public Application() {
             //Showing the application has no recipe therefore no persitance
-            this.state = AppState.outRecipe;
+            this.state = AppState.noRecipe;
             //Shpwing the apploop has continued
             this.appFinished = false;
-            //Initilise the recipe list
-            this.recipes = new List<Recipe>();
-            //Set the active Recipe to null
-            this.active_recipe = null;
         }
         /// <summary>
         /// This is the default debug class
@@ -53,8 +46,49 @@ namespace POE {
         /// #LAZY
         /// </summary>
         public void RunDebug() {
+            this.state = AppState.hasRecipe; // Defualt the app state to hasRecipe
             //Make the default recipe class
-            this.recipes = new DebugClass().Recipes;
+            this.recipe = new Recipe(
+                "Bread",
+                new string[] { 
+                    "Water",
+                    "Flour",
+                    "Baking Soda",
+                    "Sugar",
+                    "Castor Sugar",
+                    "Milk"
+                },
+                new UnitOfMeasurement[] { 
+                    UnitOfMeasurement.Ml,
+                    UnitOfMeasurement.Cup,
+                    UnitOfMeasurement.Tsp,
+                    UnitOfMeasurement.Tbsp,
+                    UnitOfMeasurement.G,
+                    UnitOfMeasurement.Ml
+                },
+                new double[] { 
+                    3,
+                    4,
+                    2,
+                    6,
+                    400,
+                    450
+                },
+                new string[] {
+                    "Put water in bowl",
+                    "Put flour in bowl",
+                    "Put baking soda in bowl",
+                    "Put sugar in bowl",
+                    "Add Castor Sugar",
+                    "Add Milk",
+                    "Mix into a dough",
+                    "Kneed the dough",
+                    "Cut into desired shapes and sizes",
+                    "Bake for 30 minutes at 200 degrees Celcius",
+                    "Let cool for 15 minutes",
+                    "Enjoy your sweet bread"
+                }
+            );
             //Call the RunApp method to run the app normally
             this.RunApp();
         }
@@ -115,17 +149,17 @@ namespace POE {
             //Swtich the current state
             switch (state) {
                 //Select the prompt if there is no recipe
-                case AppState.outRecipe: {
+                case AppState.noRecipe: {
                     //Set the no recipe prompt
-                    prompt = "(1) Add your recipe\n(2) View Recipes\n(3) Exit";
+                    prompt = "(1) Add your recipe\n(2) Exit";
                     //Break out the case
                     break;
                 }
 
                 //Select the prompt if there is a recipe
-                case AppState.inRecipe: {
+                case AppState.hasRecipe: {
                     //Set the has recipe prompt
-                    prompt = "(1) View recipe\n(2) Adjusted recipe quantities\n(3) Reset quantities\n(4) Clear Data\n(5) Delete Recipe\n(6) << Back\n(7) Exit";
+                    prompt = "(1) View recipe\n(2) Adjusted recipe quantities\n(3) Reset quantities\n(4) Clear Data\n(5) Exit";
                     //Break out the case statement
                     break;
                 }
@@ -146,7 +180,7 @@ namespace POE {
             //Switch on the current state
             switch (state) {
                 //Case if there is no recipe
-                case AppState.outRecipe: {
+                case AppState.noRecipe: {
                     //Go to the method that handles the events related to entering a recipe
                     this.EnterRecipeEventHandler(option);
                     //Break this current case
@@ -154,7 +188,7 @@ namespace POE {
                 }
 
                 //Case if there is a recipe
-                case AppState.inRecipe: {
+                case AppState.hasRecipe: {
                     //Go to the method that handles the events related to having a current recipe
                     this.RecipeEventHandler(option);
                     //Break the current case
@@ -215,7 +249,7 @@ namespace POE {
                     userInput = userInput.Replace('.', ','); // if there is we make it a commma ','
                     //The reason we do this is due to geolocation and location settings 
                     // The .NET compiler knows we make number like this 1 234,56
-                    // Not like the yanks that do it like this: 1,234.56
+                    // Not like the Americans that do it like this: 1,234.56
                     //Thank you!
                 }
                 return Convert.ToDouble(userInput); // Then we attempt to return it
@@ -236,7 +270,7 @@ namespace POE {
         }
         #endregion
 
-        #region Out Recipe Methods
+        #region No Recipe Methods
         //Here are the events of the app without a recipe
         /// <summary>
         /// This method Handles the users option event for when there is no recipe
@@ -250,11 +284,6 @@ namespace POE {
                 }
 
                 case (2): {
-                    this.ViewRecipes();
-                    break;
-                }
-
-                case (3): {
                     this.Exit(); // if its 2 we close the app!
                     break;
                 }
@@ -264,43 +293,23 @@ namespace POE {
         /// Allows the user to enter the recipe of their choice
         /// </summary>
         private void EnterRecipe() {
-            Console.Clear();
             bool restart = default;
-            string name = string.Empty;
+            string name = default;
             string[] names = default;
             UnitOfMeasurement[] UoMs = default;
             double[] quantities = default;
-            ushort[] calories = default;
-            string[] foodgroups = default;
             string[] steps = default;
-            bool namevalid = false;
             do {
-                
-                if (!namevalid) {//Added scope for memory management
-                    do {
-                        Console.Write("Enter the name of your recipe: ");
-                        name = Console.ReadLine() ?? "none";
-                        if (name == "none") {
-                            Console.WriteLine("Name is invalid!");
-                        } else {
-                            bool exists = false;
-                            if (this.recipes.Count != 0) {
-                                foreach (Recipe recipe in this.recipes) {
-                                    if (recipe.Name.ToLower() == name.ToLower()) {
-                                        exists = true;
-                                    }
-                                }
-                            }
-
-                            if (exists) {
-                                Console.WriteLine($"Recipe {name} Already Exists");
-                            } else {
-                                namevalid = true;
-                            }
-                        }
-                    } while (!namevalid);
-                }
-
+                bool validName = false;
+                do {
+                    Console.Write("Enter name for your recipe: ");
+                    name = Console.ReadLine();
+                    if (name == null || name == "") {
+                        Console.WriteLine("Recipe name invalid!");
+                    } else {
+                        validName = true;
+                    }
+                } while (!validName);
                 //Tell the user what we are doing
                 Console.WriteLine("Lets start with the amount of ingredients you want to add!");
                 Console.WriteLine("You can always restart by typing 'r'");
@@ -315,7 +324,7 @@ namespace POE {
                     continue;
                 }
 
-                (names, UoMs, quantities, calories, foodgroups) = this.GetIngredients(out restart, numIngredients);
+                (names, UoMs, quantities) = this.GetIngredients(out restart, numIngredients);
 
                 if (!restart) {
                     Console.Write("Enter the number of steps for your recipe: ");
@@ -326,14 +335,13 @@ namespace POE {
                 }
 
                 if (restart) {
-                    namevalid = false;
                     Console.WriteLine("Lets restart then\nPress any key to continue...");
                     Console.Clear();
                 }
 
             } while (restart);
-            this.recipes.Add(new Recipe(name, names, UoMs, quantities, calories, foodgroups, steps));
-            this.recipes = this.recipes.OrderBy(x => x.Name).ToList();
+            this.recipe = new Recipe(name, names, UoMs, quantities, steps);
+            this.state = AppState.hasRecipe;
         }
         /// <summary>
         /// This method gets the ingredients from the the user
@@ -341,40 +349,30 @@ namespace POE {
         /// <param name="restart">We check to see if the user wants to restart</param>
         /// <param name="count"> The amount of ingredients</param>
         /// <returns>the names units and quantites for each ingredient</returns>
-        private (string[] ing_names, UnitOfMeasurement[] UoMs, double[] quantities, ushort[] calories, string[] foodgroups)
-            GetIngredients(out bool restart, int count) {
+        private (string[] ing_names, UnitOfMeasurement[] UoMs, double[] quantities) GetIngredients(out bool restart, int count) {
             restart = false;
             //Make an array of Ingredient names unit of measurements and quantities for the users recipe
             string[] ingredientNames = new string[count];
             UnitOfMeasurement[] UoM = new UnitOfMeasurement[count];
             double[] quantity = new double[count];
-            ushort[] calories = new ushort[count];
-            string[] foodgroups = new string[count];
+
             //Do a for loop for the number of ingredients the user entered
             for (int i = 0; i < count; i++) {
                 //Get the ingredient name
                 ingredientNames[i] = this.GetIngredientName(out restart, i + 1);
                 if (restart) {
-                    return (null, null, null, null, null);
+                    return (null, null, null);
                 }
                 UoM[i] = this.GetUnitOfMeasurement(out restart);
                 if (restart) {
-                    return (null, null, null, null, null);
+                    return (null, null, null);
                 }
                 quantity[i] = this.GetIngredientQuantity(UoM[i], out restart);
                 if (restart) {
-                    return (null, null, null, null, null);
-                }
-                calories[i] = this.GetCalories(out restart);
-                if (restart) {
-                    return (null, null, null, null, null);
-                }
-                foodgroups[i] = this.GetIngredientFoodGroup(out restart);
-                if (restart) {
-                    return (null, null, null, null, null);
+                    return (null, null, null);
                 }
             }
-            return (ingredientNames, UoM, quantity, calories, foodgroups);
+            return (ingredientNames, UoM, quantity);
         }
         /// <summary>
         /// This method gets the steps the user wants to add
@@ -474,100 +472,10 @@ namespace POE {
             return qty;
         }
 
-        private ushort GetCalories(out bool restart) {
-            restart = false;
-            bool validCalories = false;
-            ushort calories = default;
-            do {
-                Console.Write("Enter Amount Of Calories: ");
-                string s = Console.ReadLine();
-                if (s.ToLower() == "r") {
-                    restart = true;
-                    break;
-                }
-                try {
-                    calories = Convert.ToUInt16(s);
-                    validCalories = true;
-                } catch (FormatException) {
-                    Console.WriteLine("Invalid Calories entered");
-                } catch (OverflowException) {
-                    Console.WriteLine("Invalid Calories entered");
-                }
-            } while (!validCalories);
-            return calories;
-        }
-
-        private string GetIngredientFoodGroup(out bool restart) {
-            restart = false;
-            Console.Write(
-                "Select food Group:\n(1) Starchy Fruits\n(2) Fruits and Veg\n(3) Grains\n(4) Protein\n(5) Dairy\n(6) Fats and Oils\n(7) Water\nEnter Unit: "
-               );
-            string[] groups = { "Frut", "Vegetable", "Grain", "Protein", "Dairy", "N/A" };
-            bool fg_valid = false;
-            string foodGroupName = default;
-            do {
-                byte selected_group = this.GetBytes(out restart);
-                if (restart) {
-                    return null;
-                }
-
-                if (selected_group == 0) {
-                    Console.WriteLine("Invalid Option selected!");
-                }
-
-                try {
-                    foodGroupName = groups[selected_group - 1];
-                    fg_valid = true;
-                } catch (IndexOutOfRangeException) {
-                    Console.WriteLine("Invalid Option Selected");
-                }
-            } while (!fg_valid);
-            return foodGroupName;
-        }
-
-        private void ViewRecipes() {
-            Console.Clear();
-            if (this.recipes.Count == 0) {
-                Console.WriteLine("There are no recipes\nPress any key to continue . . .");
-                Console.ReadKey();
-                Console.Clear();
-                return;
-            }
-
-            bool validByte = false;
-            do {
-                Console.Clear();
-                for (int i = 0; i < this.recipes.Count; i++) {
-                    Console.WriteLine($"({i + 1}) {this.recipes[i].Name}");
-                }
-
-                Console.WriteLine($"({this.recipes.Count + 1}) << Back");
-                byte option = this.GetBytes();
-
-                if (option == 0) {
-                    Console.WriteLine("Invalid Option");
-                    continue;
-                }
-
-                if (option > this.recipes.Count + 1) {
-                    Console.WriteLine("Invalid Option");
-                    continue;
-                }
-
-                if (option == this.recipes.Count + 1) {
-                    break;
-                }
-
-                this.active_recipe = option - 1;
-                this.state = AppState.inRecipe;
-                validByte = true;
-            } while (!validByte);
-        }
-
         #endregion
 
 
-        #region In Recipe Methods
+        #region Has Recipe Methods
         //Here are the events of the app with a recipe
         /// <summary>
         /// This method handles the events if there is a recipe
@@ -596,16 +504,6 @@ namespace POE {
                 }
 
                 case (5): {
-                    this.DeleteRecipe();
-                    break;
-                }
-
-                case (6): {
-                    this.state = AppState.outRecipe;
-                    break;
-                }
-
-                case (7): {
                     this.Exit();
                     break;
                 }
@@ -616,7 +514,7 @@ namespace POE {
         /// </summary>
         private void PrintRecipe() {
             Console.Clear();
-            this.recipes[this.active_recipe.Value].PrintRecipe();
+            Console.WriteLine(this.recipe.ToString());
             Console.WriteLine("Press any key to continue . . .");
             Console.ReadKey();
         }
@@ -633,7 +531,6 @@ namespace POE {
             do {
                 byte opt = this.GetBytes();
                 if (opt == 4) {
-                    validOpt = true;
                     return;
                 } else if (opt == 0 || opt > 3) {
                     Console.WriteLine("Select a valid Option!");
@@ -641,28 +538,23 @@ namespace POE {
                 } else {
                     switch (opt) {
                         case (1): {
-                            this.recipes[this.active_recipe.Value].Scale(0.5);
+                            this.recipe.Scale(0.5);
                             break;
                         }
 
                         case (2): {
-                            this.recipes[this.active_recipe.Value].Scale(2);
+                            this.recipe.Scale(2);
                             break;
                         }
 
                         case (3): {
-                            this.recipes[this.active_recipe.Value].Scale(3);
+                            this.recipe.Scale(3);
                             break;
                         }
                     }
                     validOpt = true;
                 }
             } while (!validOpt);
-
-            if (this.recipes[this.active_recipe.Value].TotalCalories > 300) {
-                Console.ReadKey();
-            }
-
             Console.Clear();
             Console.WriteLine("Recipe scaled accurately.\nSelect option '(1) View recipe' to view the recipe");
             Console.ReadKey();
@@ -673,22 +565,17 @@ namespace POE {
         private void ResetRecipe() {
             Console.Clear();
             Console.WriteLine("Recipe has been reset to default quantities\nSelect option '(1) View recipe' to view the recipe");
-            this.recipes[this.active_recipe.Value].ResetRecipe();
+            this.recipe.ResetRecipe();
             Console.ReadKey();
         }
         /// <summary>
         /// Delete the recipe
         /// </summary>
         private void ClearData() {
-            this.recipes = new List<Recipe>();
-            this.state = AppState.outRecipe;
+            this.recipe = null;
+            this.state = AppState.noRecipe;
             Console.WriteLine("Recipe deleted.\nPress any key to continue . . .");
             Console.ReadKey();
-        }
-
-        private void DeleteRecipe() {
-            this.recipes.Remove(this.recipes[this.active_recipe.Value]);
-            this.state = AppState.outRecipe;
         }
         #endregion
     }

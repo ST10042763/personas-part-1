@@ -2,7 +2,7 @@
     /// <summary>
     /// This is the standardised unit of measurement
     /// </summary>
-    public enum UnitOfMeasurement {
+    internal enum UnitOfMeasurement {
         None = 0,
         Tsp = 1,
         Tbsp = 2,

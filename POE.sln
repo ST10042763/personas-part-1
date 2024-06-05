@@ -5,22 +5,16 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POE", "POE.csproj", "{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeUnitTests", "..\RecipeUnitTests\RecipeUnitTests.csproj", "{7CE25DCF-C899-43E7-881D-B4503D3791D7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Debug|Any CPU.Build.0 = Debug|x64
+		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50F1ADF7-25D2-4DC6-9D2A-B8F22C874748}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7CE25DCF-C899-43E7-881D-B4503D3791D7}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{7CE25DCF-C899-43E7-881D-B4503D3791D7}.Debug|Any CPU.Build.0 = Debug|x64
-		{7CE25DCF-C899-43E7-881D-B4503D3791D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CE25DCF-C899-43E7-881D-B4503D3791D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

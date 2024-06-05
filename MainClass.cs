@@ -17,13 +17,11 @@ namespace POE {
             if (args.Length == 0) { //Check for no args
                 //If no args run app normally
                 new Application().RunApp();
-            } else if (args.Length == 1 && args[0].ToLower() == "init-class-debug") { // if 1 arg
+            } else if (args.Length == 1 && args[0].ToLower() == "d") { // if 1 arg
                 //Arg == init-class-debug
                 //Run the debug method for the application
                 //Will have a predefined class and app state!
                 new Application().RunDebug();
-            } else if (args.Length == 1 && args[0].ToLower() == "run-unit-test") {
-                new Recipe_Unit_Test().RunUnitTest();
             } else {
                 //Else someone is messing with me and i ive them issues! :D
                 Console.Write("An attempt to break the application has been detected\n");
